@@ -1,0 +1,251 @@
+openapi: 3.0.3
+info:
+  title: Warehouse Management API
+  description: API для автоматизации складского учета.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Локальный сервер разработки
+
+paths:
+  # Требование 1: посчитать количество поставщиков данного материала
+  /materials/{materialId}/suppliers/count:
+    get:
+      summary: Получить количество поставщиков данного материала
+      description: Возвращает количество уникальных поставщиков, которые поставляли указанный материал.
+      operationId: countSuppliersByMaterial
+      parameters:
+        - name: materialId
+          in: path
+          description: Уникальный идентификатор материала
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успешный ответ с количеством поставщиков
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+        '404':
+          description: Материал с указанным ID не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Требование 3: вывести список поставщиков данного материала
+  /materials/{materialId}/suppliers:
+    get:
+      summary: Получить список поставщиков данного материала
+      description: Возвращает полный список поставщиков со всеми реквизитами, которые поставляли указанный материал.
+      operationId: getSuppliersByMaterial
+      parameters:
+        - name: materialId
+          in: path
+          description: Уникальный идентификатор материала
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Список поставщиков
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Supplier'
+        '404':
+          description: Материал с указанным ID не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Требование 2: предоставление возможности добавления единицы хранения
+  /receipts:
+    post:
+      summary: Добавление новой единицы хранения (приходного ордера)
+      description: Создает новую запись о поступлении материала на склад.
+      operationId: createReceipt
+      requestBody:
+        description: Данные новой единицы хранения
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewReceipt'
+      responses:
+        '201':
+          description: Запись успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+        '400':
+          description: Некорректные входные данные (например, ссылается на несуществующего поставщика или материал)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Требование 4: посчитать количество поставщиков по адресу банка
+  /suppliers/count:
+    get:
+      summary: Посчитать количество поставщиков по фильтру (включая адрес банка)
+      description: Возвращает количество поставщиков, соответствующих переданным критериям поиска. Используется для подсчета поставщиков по адресу банка.
+      operationId: countSuppliers
+      parameters:
+        - name: bankCity
+          in: query
+          description: Город банка
+          schema:
+            type: string
+        - name: bankStreetAddress
+          in: query
+          description: Улица и дом банка
+          schema:
+            type: string
+        - name: bankZipCode
+          in: query
+          description: Индекс банка
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Количество найденных поставщиков
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/CountResponse'
+
+components:
+  schemas:
+    # Схема для ответа с количеством
+    CountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Результат подсчета
+          example: 5
+
+    # Схема Поставщика (соответствует таблице Suppliers)
+    Supplier:
+      type: object
+      properties:
+        supplierId:
+          type: integer
+          format: int64
+          readOnly: true
+        name:
+          type: string
+          description: Наименование поставщика
+        inn:
+          type: string
+          description: ИНН
+        legalZipCode:
+          type: string
+        legalCity:
+          type: string
+        legalStreetAddress:
+          type: string
+        bankZipCode:
+          type: string
+        bankCity:
+          type: string
+        bankStreetAddress:
+          type: string
+        bankAccount:
+          type: string
+
+    # Схема для создания нового Прихода (без receiptId)
+    NewReceipt:
+      type: object
+      required:
+        - orderNumber
+        - receiptDate
+        - supplierId
+        - balanceAccount
+        - docTypeId
+        - documentNumber
+        - materialId
+        - materialAccount
+        - unitId
+        - quantity
+        - unitPrice
+      properties:
+        orderNumber:
+          type: string
+          description: Номер ордера
+          example: "П-100/24"
+        receiptDate:
+          type: string
+          format: date
+          description: Дата поступления
+          example: "2024-05-23"
+        supplierId:
+          type: integer
+          format: int64
+          description: Код поставщика
+          example: 101
+        balanceAccount:
+          type: string
+          description: Балансовый счет
+          example: "10.01"
+        docTypeId:
+          type: integer
+          description: Код типа сопроводительного документа
+          example: 1
+        documentNumber:
+          type: string
+          description: Номер сопроводительного документа
+          example: "УПД-12345"
+        materialId:
+          type: integer
+          format: int64
+          description: Код материала
+          example: 1001
+        materialAccount:
+          type: string
+          description: Счет материала
+          example: "10.01.1"
+        unitId:
+          type: integer
+          description: Код единицы измерения
+          example: 2
+        quantity:
+          type: number
+          description: Количество пришедшего материала
+          example: 50.5
+        unitPrice:
+          type: number
+          description: Цена за единицу измерения
+          example: 120.00
+
+    # Схема полного Прихода (включая receiptId)
+    Receipt:
+      allOf:
+        - $ref: '#/components/schemas/NewReceipt'
+        - type: object
+          properties:
+            receiptId:
+              type: integer
+              format: int64
+              readOnly: true
+              description: Уникальный ID записи (присваивается сервером)
+
+    # Схема для ошибок
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Поставщик с ID 999 не найден."
