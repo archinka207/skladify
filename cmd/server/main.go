@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
 	"warehouse-api/config"
 	"warehouse-api/generated"
 	"warehouse-api/internal/api"
