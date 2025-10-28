@@ -24,6 +24,7 @@ func main() {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+
 	defer cancel()
 
 	store, err := storage.NewPostgresStorage(ctx, cfg.DatabaseURL)
@@ -65,6 +66,5 @@ func main() {
 	if err := server.Shutdown(shutdownCtx); err != nil {
 		log.Fatalf("Ошибка при остановке сервера: %v", err)
 	}
-
 	log.Println("Сервер успешно остановлен")
 }
