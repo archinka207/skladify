@@ -1,5 +1,3 @@
-// Файл: cmd/server/main.go
-// Файл: cmd/server/main.go (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 package main
 
 import (
@@ -16,12 +14,11 @@ import (
 	"warehouse-api/internal/api"
 	"warehouse-api/internal/storage"
 
-	"github.com/go-chi/chi/v5" // <-- Важно: импортируем chi
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
-	// 1. Загрузка конфигурации
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Ошибка загрузки конфигурации: %v", err)
@@ -30,7 +27,6 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// 2. Инициализация хранилища (подключение к БД)
 	store, err := storage.NewPostgresStorage(ctx, cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("Не удалось подключиться к базе данных: %v", err)
@@ -38,29 +34,18 @@ func main() {
 	defer store.Close()
 	log.Println("Успешное подключение к базе данных")
 
-	// 3. Создание экземпляра сервера с бизнес-логикой
 	apiServer := api.NewServer(store)
 
-	// --- ИЗМЕНЕНИЯ ЗДЕСЬ ---
-
-	// 4. Сначала создаем экземпляр роутера chi
 	chiRouter := chi.NewRouter()
 
-	// 5. Добавляем к нему наши middleware
 	chiRouter.Use(middleware.Logger)
 	chiRouter.Use(middleware.Recoverer)
 
-	// 6. Теперь передаем наш роутер в сгенерированную функцию.
-	// Она добавит все API-маршруты в уже настроенный chiRouter.
-	// Переменную `handler` можно использовать как основной обработчик для http.Server.
 	handler := generated.HandlerFromMux(apiServer, chiRouter)
 
-	// --- КОНЕЦ ИЗМЕНЕНИЙ ---
-
-	// 7. Настройка и запуск HTTP-сервера
 	server := &http.Server{
 		Addr:    ":" + cfg.Port,
-		Handler: handler, // Используем итоговый handler
+		Handler: handler,
 	}
 
 	go func() {
@@ -70,7 +55,6 @@ func main() {
 		}
 	}()
 
-	// 8. Graceful shutdown (корректное завершение работы)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
