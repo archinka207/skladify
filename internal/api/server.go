@@ -12,11 +12,11 @@ import (
 
 // Server - наша реализация ServerInterface.
 type Server struct {
-	Store *storage.PostgresStorage
+	Store storage.Storage // Используем интерфейс вместо конкретной реализации
 }
 
 // NewServer создает новый экземпляр сервера.
-func NewServer(store *storage.PostgresStorage) *Server {
+func NewServer(store storage.Storage) *Server { // Принимаем интерфейс
 	return &Server{Store: store}
 }
 
