@@ -1,4 +1,3 @@
-// Файл: config/config.go
 package config
 
 import (
@@ -6,13 +5,11 @@ import (
 	"os"
 )
 
-// Config хранит конфигурацию приложения.
 type Config struct {
 	DatabaseURL string
 	Port        string
 }
 
-// Load загружает конфигурацию из переменных окружения.
 func Load() (*Config, error) {
 	dbHost := os.Getenv("DB_HOST")
 	if dbHost == "" {
