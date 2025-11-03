@@ -128,6 +128,8 @@ CREATE TABLE WarehouseReceipts (
     unit_id INT NOT NULL,
     quantity DECIMAL(18, 3) NOT NULL CHECK (quantity > 0),
     unit_price DECIMAL(18, 2) NOT NULL CHECK (unit_price >= 0),
+    -- Новое поле
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
     -- Внешние ключи
     CONSTRAINT fk_receipts_supplier
@@ -147,7 +149,7 @@ COMMENT ON COLUMN WarehouseReceipts.receipt_date IS 'Дата поступлен
 COMMENT ON COLUMN WarehouseReceipts.supplier_id IS 'Код поставщика (FK)';
 COMMENT ON COLUMN WarehouseReceipts.quantity IS 'Количество пришедшего материала (не может быть <= 0)';
 COMMENT ON COLUMN WarehouseReceipts.unit_price IS 'Цена за единицу (не может быть отрицательной)';
-
+COMMENT ON COLUMN WarehouseReceipts.created_at IS 'Дата и время создания записи (автоматически заполняется)';
 -- =================================================================
 -- Создание индексов для внешних ключей
 -- Это ускоряет операции JOIN и выборки данных.

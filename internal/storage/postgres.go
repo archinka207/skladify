@@ -84,11 +84,11 @@ func (s *PostgresStorage) CountSuppliersByMaterial(ctx context.Context, material
 // CreateReceipt создает новую запись о приходе.
 func (s *PostgresStorage) CreateReceipt(ctx context.Context, receipt generated.NewReceipt) (int64, error) {
 	query := `
-		INSERT INTO WarehouseReceipts (order_number, receipt_date, supplier_id, balance_account, doc_type_id, 
-		                             document_number, material_id, material_account, unit_id, quantity, unit_price)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-		RETURNING receipt_id;
-	`
+        INSERT INTO WarehouseReceipts (order_number, receipt_date, supplier_id, balance_account, doc_type_id, 
+                                     document_number, material_id, material_account, unit_id, quantity, unit_price)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING receipt_id;
+    `
 	var receiptId int64
 	err := s.pool.QueryRow(ctx, query,
 		receipt.OrderNumber, receipt.ReceiptDate.Time, receipt.SupplierId, receipt.BalanceAccount, receipt.DocTypeId,
